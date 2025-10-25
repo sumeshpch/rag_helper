@@ -1,0 +1,20 @@
+# OpenAI API client for GPT models
+openai>=1.0.0
+
+# PyTorch - required by sentence-transformers and transformers
+torch>=2.0.0
+
+# Sentence Transformers - for creating embeddings
+sentence-transformers>=2.2.0
+
+# HuggingFace Transformers - for local LLM generation
+transformers>=4.30.0
+
+# Accelerate - for optimized model loading and inference
+accelerate>=0.20.0
+
+# Scikit-learn - for cosine similarity calculations
+scikit-learn>=1.3.0
+
+# NumPy - numerical operations (locked to 1.x for compatibility)
+numpy>=1.24.0,<2.0.0
