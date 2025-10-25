@@ -44,6 +44,18 @@ This approach ensures the AI provides accurate, domain-specific answers grounded
 - Significantly better answer quality
 - Requires OpenAI account
 
+### Quick Comparison
+
+| Feature | Local Mode | Cloud Mode |
+|---------|-----------|------------|
+| **Cost** | Free | ~$0.00015/query |
+| **Quality** | Good | Excellent |
+| **Privacy** | 100% Private | Sent to OpenAI |
+| **Speed** | Fast | Very Fast |
+| **Setup** | No API key | Needs API key |
+| **Internet** | Not required | Required |
+| **Best For** | Testing, privacy, cost | Production, quality |
+
 ## Requirements
 
 - Python 3.11 or 3.12
@@ -184,20 +196,33 @@ Modify the configuration section in `main.py`:
 
 ```python
 MODEL_EMB = "all-MiniLM-L6-v2"  # Embedding model
-GPT_MODEL = "gpt-4o-mini"       # GPT model (gpt-4o-mini, gpt-4, gpt-3.5-turbo)
+GPT_MODEL = "gpt-4o-mini"       # OpenAI GPT model
+HUGGINGFACE_MODEL = "gpt2"      # Local HuggingFace model
 TOP_K = 3                       # Number of documents to retrieve
+USE_HUGGINGFACE = True          # True = Local, False = OpenAI
 ```
 
-### Available GPT Models
+### Available Local Models (HuggingFace)
 
-- `gpt-4o-mini` - Fast and cost-effective (recommended)
-- `gpt-4o` - Most capable, higher cost
+Free, no authentication required:
+- `gpt2` - Medium quality, 548MB (recommended for local)
+- `distilgpt2` - Fast but basic quality, 82MB
+- `gpt2-medium` - Better quality, 1.5GB
+- `EleutherAI/gpt-neo-125M` - Decent quality, 125M params
+
+**Note**: First run downloads the model, subsequent runs are instant.
+
+### Available Cloud Models (OpenAI)
+
+Requires API key and costs per query:
+- `gpt-4o-mini` - Fast and cost-effective (~$0.00015/query, recommended)
+- `gpt-4o` - Most capable (~$0.003/query)
 - `gpt-4-turbo` - Good balance of speed and capability
 - `gpt-3.5-turbo` - Fastest, lowest cost
 
 ### Alternative Embedding Models
 
-- `all-MiniLM-L6-v2` - Fast, lightweight (default)
+- `all-MiniLM-L6-v2` - Fast, lightweight (default, recommended)
 - `all-mpnet-base-v2` - Higher quality, slower
 - `paraphrase-multilingual-MiniLM-L12-v2` - Multilingual support
 
@@ -245,20 +270,39 @@ answer = generate_answer("What is GraphQL?", context_docs)
 print(answer)
 ```
 
-## Cost Estimation
+## Cost Comparison
+
+### Local Mode (HuggingFace)
+- **Cost**: $0 (completely free!)
+- **Quality**: Moderate (decent for simple Q&A)
+- **Speed**: Fast after initial model download
+- **Privacy**: 100% private, runs offline
+
+### Cloud Mode (OpenAI)
 
 Using `gpt-4o-mini`:
-- ~$0.00015 per question (varies with context length)
-- Very affordable for personal projects
-- ~6,600 questions per $1
+- **Cost**: ~$0.00015 per question (varies with context length)
+- **Quality**: Excellent, human-like responses
+- **Speed**: Very fast (depends on internet)
+- Very affordable for personal projects (~6,600 questions per $1)
 
 Using `gpt-4o`:
-- ~$0.002-0.005 per question
-- Higher quality responses
+- **Cost**: ~$0.002-0.005 per question
+- **Quality**: Best available
+- Higher quality, more nuanced responses
+
+**Recommendation**: Start with local mode for testing, switch to OpenAI for production or when you need high-quality answers.
 
 ## Troubleshooting
 
-### OpenAI API Key Not Found
+### "Repetitive or Low-Quality Answers" (Local Mode)
+
+If local models generate repetitive text:
+- Switch to `gpt2` instead of `distilgpt2` (better quality)
+- Try `gpt2-medium` for even better results (1.5GB)
+- Consider switching to OpenAI for production use
+
+### "OpenAI API Key Not Found" (Cloud Mode)
 
 ```bash
 # Make sure the key is exported
@@ -266,11 +310,24 @@ echo $OPENAI_API_KEY
 
 # If empty, set it:
 export OPENAI_API_KEY="your_key_here"
+
+# Or switch to local mode in main.py:
+USE_HUGGINGFACE = True
 ```
 
-### Rate Limit Errors
+### "Model Download Taking Too Long" (Local Mode)
+
+First run downloads the model:
+- `distilgpt2`: ~82MB (< 1 minute)
+- `gpt2`: ~548MB (2-5 minutes)
+- `gpt2-medium`: ~1.5GB (5-10 minutes)
+
+Models are cached and subsequent runs are instant.
+
+### Rate Limit Errors (Cloud Mode)
 
 If you hit OpenAI rate limits:
+- Switch to local mode (no rate limits!)
 - Add a delay between requests
 - Upgrade your OpenAI plan
 - Use `gpt-3.5-turbo` for higher rate limits
@@ -371,11 +428,23 @@ For larger knowledge bases, consider:
 
 ## Performance Tips
 
+### For Local Mode (HuggingFace)
+- Use `gpt2` for best balance of speed and quality
+- Use `distilgpt2` if you need maximum speed
+- Reduce `max_new_tokens` to speed up generation
+- Models are cached after first download
+
+### For Cloud Mode (OpenAI)
 - Use `gpt-4o-mini` for faster, cheaper responses
+- Use `gpt-4o` when you need highest quality
 - Reduce `TOP_K` if context is too long
 - Cache embeddings to avoid recomputation
 - Use batch processing for multiple queries
-- Consider local LLMs (Llama, Mistral) for no API costs
+
+### General
+- Cache document embeddings (see Advanced Usage)
+- Use smaller embedding models if memory is limited
+- Process queries in batches when possible
 
 ## Related Projects
 
